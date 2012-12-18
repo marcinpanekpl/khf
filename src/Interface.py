@@ -12,7 +12,6 @@ from ttk import Style
 from Controller import Controller
 import sys
 import tkFileDialog
-from PIL import Image, ImageTk
 
 
 class Interface(Frame):
@@ -41,10 +40,10 @@ class Interface(Frame):
         
         self.historyFrame = Frame(self, height=100, width=200, borderwidth=2)
         
-        self.backButton = Button(self.historyFrame, text="Back", command=self.controller.goBack)
+        self.backButton = Button(self.historyFrame, text="Back", command=lambda: self.showImage(self.controller.goBack()))
         self.backButton.pack(side=LEFT, padx=5, pady=5)
         
-        self.nextButton = Button(self.historyFrame, text="Next", command=self.controller.goNext)
+        self.nextButton = Button(self.historyFrame, text="Next", command=lambda: self.showImage(self.controller.goNext()))
         self.nextButton.pack(side=LEFT, padx=5, pady=5)
         
         self.openButton = Button(self.historyFrame, text="Open", command=self.openFile)
@@ -55,10 +54,8 @@ class Interface(Frame):
     def initImageFrame(self):
         
         self.imageFrame = Frame(self, borderwidth=2)
-        
-        img = self.controller.getImage()
-        if img != None:
-            self.showImage(img)    
+        self.showImage(self.controller.getImage())
+
         
     def initMenuFrame(self):
         
@@ -90,7 +87,7 @@ class Interface(Frame):
         snakeCheckBox.grid(row=4, padx=15, stick=N + W)
         
         # Generate
-        self.generateButton = Button(self.menuFrame, text="Generate", command=self.controller.generate)
+        self.generateButton = Button(self.menuFrame, text="Generate", command=lambda: self.showImage(self.controller.generate()))
         self.generateButton.grid(row=6, column=0, padx=15, pady=(20,0), stick=N + W)      
         
         
@@ -101,7 +98,7 @@ class Interface(Frame):
         to = 255
         vcmd = (self.register(self.validateSpinBox),'%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
-        label1 = Label(frame, text="Parametr 1")
+        label1 = Label(frame, text="TRESHOLD (0,255)")
         self.binaryThreshold = StringVar()
         self.binarySpinBox = Spinbox(frame, textvariable=self.binaryThreshold, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd) 
         
@@ -180,25 +177,20 @@ class Interface(Frame):
             return False
 
     def showImage(self, img):
-        
-        label = Label(self, image=img)
-        label.image = img  # keep a reference! without it the image will be garbaged 
-        label.grid(row=1, column=0, sticky=N + W)
+        if img != None:
+            label = Label(self, image=img)
+            label.image = img  # keep a reference! without it the image will be garbaged
+            label.grid(row=1, column=0, sticky=N + W)
 
     def openFile(self):
         
         fileHandler = tkFileDialog.askopenfile(parent=self, mode='rb', title='Choose the first image')
         if fileHandler != None:
-            imgFile = Image.open(fileHandler)
-            img = ImageTk.PhotoImage(imgFile)
-            self.showImage(img)
+            self.showImage(self.controller.loadImage(fileHandler))
             
             fileHandler2 = tkFileDialog.askopenfile(parent=self, mode='rb', title='Choose the second image')
             if fileHandler2 != None:
-                imgFile2 = Image.open(fileHandler2)
-                img2 = ImageTk.PhotoImage(imgFile2)
-                self.controller.images.append(img)
-                self.controller.images.append(img2)
+                self.showImage(self.controller.loadImage(fileHandler2))
 
     def setSize(self, w, h):
         
