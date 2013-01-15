@@ -1,10 +1,14 @@
 import Image
+import operator
 
 __author__ = 'marc'
 
 BITMAP_MODE = "1"
 GREY_SCALE_MODE = "L"
+RGB_MODE = "RGB"
 
+COLOR_MAX_VALUE = 255
+RED_COLOR = (COLOR_MAX_VALUE, 0, 0)
 class ImageHandler:
 
     def loadWelcomeImage(self):
@@ -18,26 +22,17 @@ class ImageHandler:
         image.putdata(data)
         return image
 
+    def createNewRGBFromBinaryBitmap(self, bitmap):
+        rgb = Image.new(RGB_MODE, bitmap.size)
+        rgb.putdata(map(lambda x: (x*COLOR_MAX_VALUE, x*COLOR_MAX_VALUE, x*COLOR_MAX_VALUE), bitmap.getdata()))
+        return rgb
 
-#from PIL import Image
-#
-#image = Image.open("/dane/work/rosm/GAIT/Depth0/0019.png", "r").convert("L")
-#image2 = Image.open("/dane/work/rosm/GAIT/Depth0/0020.png", "r").convert("L")
-#
-#treshold = 200
-#processor = GreyBitmapProcessor()
-#outputImage = processor.createBinaryMotionMap(image, image2, treshold)
-#
-#
-#def onlyPositives(x):
-#    if (x > 0):
-#        return x
-#
-##print map(onlyPositives, outputImage.getdata())
-#print image.getpixel((1,2))
-#print image2.getpixel((1,2))
-#print outputImage.getpixel((1,2))
-#
-#print image.getpixel((20,0))
-#print image2.getpixel((20,0))
-#print outputImage.getpixel((20,0))
+    def putRedBoxIntoPicture(self, picture, boxCoordinates):
+        (left, upper, right, lower) = boxCoordinates
+        picture.paste(RED_COLOR, (left, upper, right, upper+1))
+        picture.paste(RED_COLOR, (left, upper, left+1, lower))
+        picture.paste(RED_COLOR, (right, upper, right+1, lower))
+        picture.paste(RED_COLOR, (left, lower, right, lower+1))
+
+    def putRedPoint(self, picture, point):
+        picture.paste(RED_COLOR, tuple(map(operator.sub, point, (3,3))) + tuple(map(operator.add, point, (3,3))))

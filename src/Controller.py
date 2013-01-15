@@ -6,6 +6,7 @@ Created on 16-12-2012
 @author: Marcin Panek
 '''
 from PIL import ImageTk
+from BinaryBitmapProcessor import BinaryBitmapProcessor
 from CacheHolder import CacheHolder
 from GreyBitmapProcessor import GreyBitmapProcessor
 from ImageHandler import ImageHandler
@@ -16,8 +17,9 @@ class Controller(object):
     '''
     current = -1
     cache = CacheHolder()
-    imageLoader = ImageHandler()
+    imageHandler = ImageHandler()
     greyBitmapProcessor = GreyBitmapProcessor()
+    binaryBitmapProcessor = BinaryBitmapProcessor()
 
     def __init__(self, interface):
         '''
@@ -28,10 +30,10 @@ class Controller(object):
 
     def getImage(self):
         # TODO: najlepiej jakby nie wiedział o ImageTk - ale to trudne do zrealizowania jeżeli mamy generyczny generate
-        return ImageTk.PhotoImage(self.imageLoader.loadWelcomeImage())
+        return ImageTk.PhotoImage(self.imageHandler.loadWelcomeImage())
 
     def loadImage(self, fileHandler):
-        imgFile = self.imageLoader.loadGreyScaleImage(fileHandler)
+        imgFile = self.imageHandler.loadGreyScaleImage(fileHandler)
         self.current = self.cache.store(imgFile)
         return ImageTk.PhotoImage(imgFile)
 
@@ -65,12 +67,19 @@ class Controller(object):
 #        print self.inteface.snakeValue2.get()
 #        print self.inteface.snakeValue3.get()
 
-        img = None
-        if (self.inteface.binaryEnable.get() == 1 and (self.cache.get(self.current)) != None):
+        if (self.inteface.cogEnable.get() == 1 and (self.cache.get(self.current)) != None):
             img = self.greyBitmapProcessor.createBinaryMotionMap((self.cache.get(self.current - 1)),
                 self.cache.get(self.current), int(self.inteface.binaryThreshold.get()))
+            (center, box, img) = self.binaryBitmapProcessor.transformBitmapToReduceNoise(img,
+                        int(self.inteface.densityCoefficient.get()), int(self.inteface.distanceFromCenterCoefficient.get()))
+            photo = self.imageHandler.createNewRGBFromBinaryBitmap(img)
+            self.imageHandler.putRedBoxIntoPicture(photo, box)
+            self.imageHandler.putRedPoint(photo, center)
+            return ImageTk.PhotoImage(photo)
 
-        if (img != None):
+        elif (self.inteface.binaryEnable.get() == 1 and (self.cache.get(self.current)) != None):
+            img = self.greyBitmapProcessor.createBinaryMotionMap((self.cache.get(self.current - 1)),
+                self.cache.get(self.current), int(self.inteface.binaryThreshold.get()))
             return ImageTk.BitmapImage(img)
 
         return None

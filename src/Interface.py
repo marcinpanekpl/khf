@@ -111,16 +111,16 @@ class Interface(Frame):
         frame = Frame(self.menuFrame, width=300)
 
         from_ = 0
-        to = 255
+        to = 100
         vcmd = (self.register(self.validateSpinBox),'%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
-        label1 = Label(frame, text="Parametr 1")
-        self.cogValue = StringVar()
-        self.cogSpinBox = Spinbox(frame, textvariable=self.cogValue, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd) 
+        label1 = Label(frame, text="Wsp. kary za rzadkość")
+        self.densityCoefficient = StringVar()
+        self.cogSpinBox = Spinbox(frame, textvariable=self.densityCoefficient, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd)
         
-        label2 = Label(frame, text="Parametr 2")
-        self.cogValue2 = StringVar()
-        self.cogSpinBox2 = Spinbox(frame, textvariable=self.cogValue2, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd)
+        label2 = Label(frame, text="Wsp. kary za odległość")
+        self.distanceFromCenterCoefficient = StringVar()
+        self.cogSpinBox2 = Spinbox(frame, textvariable=self.distanceFromCenterCoefficient, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd)
         
         label1.grid(row=0, column=0, padx=(0,10), stick=N+W)
         label2.grid(row=1, column=0, padx=(0,10), stick=N+W)
@@ -206,7 +206,7 @@ def main():
   
     window = Tk()
     interface = Interface(window)
-    interface.setSize(860, 600)
+    interface.setSize(900, 600)
     window.mainloop()  
 
 if __name__ == '__main__':

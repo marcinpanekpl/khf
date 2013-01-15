@@ -13,7 +13,7 @@ class GreyBitmapProcessor:
 
     def createBinaryMotionMap(self, image1, image2, TRESHOLD):
         self.assertCorrectInput(image1, image2, TRESHOLD)
-        data = map(functools.partial(processPixel, TRESHOLD=TRESHOLD), image1.getdata(), image2.getdata())
+        data = map(functools.partial(processPixel, TRESHOLD=TRESHOLD), list(image1.getdata()), list(image2.getdata()))
         return ImageHandler().createNewBinaryBitmap(image1.size, data)
 
 
