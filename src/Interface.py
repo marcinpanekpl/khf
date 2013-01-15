@@ -63,15 +63,11 @@ class Interface(Frame):
         self.menuFrame = Frame(self, width=400)
         self.menuFrame.grid(row=1, column=1, sticky=N + E + S + W)
         self.menuFrame.columnconfigure(0, weight=0, minsize=100, pad=10)
-        
-        self.binaryEnable = BooleanVar()
-        self.cogEnable = BooleanVar()
-        self.snakeEnable = BooleanVar()
 
         # CheckBoxes
-        binaryCheckBox = Checkbutton(self.menuFrame, text="Mapa binarna", variable=self.binaryEnable, onvalue=True)
-        cogkBox = Checkbutton(self.menuFrame, text="Środek ciężkości", variable=self.cogEnable, onvalue=True)
-        snakeCheckBox = Checkbutton(self.menuFrame, text="Metoda aktywnych konturów", variable=self.snakeEnable, onvalue=True)
+        binaryText = Label(self.menuFrame, text="Mapa binarna")
+        cogText = Label(self.menuFrame, text="Środek ciężkości")
+        snakeText = Label(self.menuFrame, text="Metoda aktywnych konturów")
         
         # Parameters
         self.binarySpinFrame = self.createBinarySpinBoxes()
@@ -82,10 +78,10 @@ class Interface(Frame):
         
         self.snakeSpinFrame = self.createSnakeSpinBoxes()
         self.snakeSpinFrame.grid(row=5, column=0, padx=36, pady=(0,15), stick=N + W)
-        
-        binaryCheckBox.grid(row=0, padx=15, stick=N + W)
-        cogkBox.grid(row=2, padx=15, stick=N + W)
-        snakeCheckBox.grid(row=4, padx=15, stick=N + W)
+
+        binaryText.grid(row=0, padx=15, stick=N + W)
+        cogText.grid(row=2, padx=15, stick=N + W)
+        snakeText.grid(row=4, padx=15, stick=N + W)
         
         # Generate
         self.generateButton = Button(self.menuFrame, text="Generuj mapą binarną",
@@ -109,7 +105,7 @@ class Interface(Frame):
         vcmd = (self.register(self.validateSpinBox),'%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
         label1 = Label(frame, text="TRESHOLD (0,255)")
-        self.binaryThreshold = StringVar()
+        self.binaryThreshold = StringVar(value="40")
         self.binarySpinBox = Spinbox(frame, textvariable=self.binaryThreshold, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd) 
         
         label1.grid(row=0, column=0, padx=(0,10), stick=N+W)
@@ -125,11 +121,11 @@ class Interface(Frame):
         vcmd = (self.register(self.validateSpinBox),'%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
         label1 = Label(frame, text="Wsp. kary za rzadkość")
-        self.densityCoefficient = StringVar()
+        self.densityCoefficient = StringVar(value="50")
         self.cogSpinBox = Spinbox(frame, textvariable=self.densityCoefficient, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd)
         
         label2 = Label(frame, text="Wsp. kary za odległość")
-        self.distanceFromCenterCoefficient = StringVar()
+        self.distanceFromCenterCoefficient = StringVar(value="50")
         self.cogSpinBox2 = Spinbox(frame, textvariable=self.distanceFromCenterCoefficient, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd)
         
         label1.grid(row=0, column=0, padx=(0,10), stick=N+W)
