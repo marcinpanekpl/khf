@@ -9,6 +9,7 @@ RGB_MODE = "RGB"
 
 COLOR_MAX_VALUE = 255
 RED_COLOR = (COLOR_MAX_VALUE, 0, 0)
+
 class ImageHandler:
 
     def loadWelcomeImage(self):
@@ -34,5 +35,5 @@ class ImageHandler:
         picture.paste(RED_COLOR, (right, upper, right+1, lower))
         picture.paste(RED_COLOR, (left, lower, right, lower+1))
 
-    def putRedPoint(self, picture, point):
+    def putBigRedPoint(self, picture, point):
         picture.paste(RED_COLOR, tuple(map(operator.sub, point, (3,3))) + tuple(map(operator.add, point, (3,3))))

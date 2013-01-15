@@ -6,36 +6,16 @@ import operator
 __author__ = 'marc'
 from ImageHandler import BITMAP_MODE, ImageHandler
 
-class BinaryBitmapProcessor:
 
-    # zwracaj krotke z trzema elementami:
-    # 1: krotka centrum masy x,y
-    # 2: krotka wspolrzedne prostoka left, upper, right, lower
-    # 3: przesztalcona bitmapa
-    def transformBitmapToReduceNoise(self, bitmap, densityCoefficient, distanceFromCenterCoefficient):
-        assert bitmap.mode == BITMAP_MODE
-        (center, box) = self._reduceNoise(bitmap, densityCoefficient, distanceFromCenterCoefficient)
-        return (center, box, ImageHandler().createNewBinaryBitmap(bitmap.size, bitmap.getdata()))
+def createHorizontalListOfCoordinates(list, value):
+    return map(functools.partial(lambda x,y: (x,y), y=value), list)
 
-    def _reduceNoise(self, bitmap, densityCoefficient, distanceFromCenterCoefficient):
-        self._preprocessBitmapVertically(bitmap, densityCoefficient)
-        (coordinatesSum, points) = self._calculateCoordinatesSum(bitmap)
-        noise = True
-        while(noise and points > 0):
-            center = map(lambda x: x/points, coordinatesSum)
-            farest = self._calculateFarestPointFromTheBox(bitmap, center)
-            noise = self._decideWhetherRemovePixel(center, farest, bitmap.size[1]*(1-distanceFromCenterCoefficient/100))
-            if (noise):
-                bitmap.paste(0, farest + tuple(map(operator.add, farest, (1,1))))
-                points -= 1
-                coordinatesSum = map(operator.sub, coordinatesSum, farest)
+def createVerticalListOfCoordinates(list, value):
+    return map(functools.partial(lambda x,y: (y,x), y=value), list)
 
-        print points
-        print center
-        print bitmap.getbbox()
-        return (tuple(map(lambda x: int(x), center)), bitmap.getbbox())
+class BinaryBitmapVerticalTransformer:
 
-    def _preprocessBitmapVertically(self, bitmap, densityCoefficient):
+    def preprocessBitmapVertically(self, bitmap, densityCoefficient):
         sums = []
         for x in xrange(bitmap.size[0]):
             sum = 0
@@ -48,6 +28,21 @@ class BinaryBitmapProcessor:
             if (sums[x] < densityCoefficient*maxDensity/100):
                 bitmap.paste(0, (x, 0, x+1, bitmap.size[1]))
 
+class BinaryBitmapNoiseTransformer:
+
+    def reduceNoise(self, bitmap, distanceFromCenterCoefficient):
+        (coordinatesSum, points) = self._calculateCoordinatesSum(bitmap)
+        noise = True
+        while(noise and points > 0):
+            center = map(lambda x: x/points, coordinatesSum)
+            farest = self._calculateFarestPointFromTheBox(bitmap, center)
+            noise = self._decideWhetherRemovePixel(center, farest, bitmap.size[1]*(1-distanceFromCenterCoefficient/100))
+            if (noise):
+                bitmap.paste(0, farest + tuple(map(operator.add, farest, (1,1))))
+                points -= 1
+                coordinatesSum = map(operator.sub, coordinatesSum, farest)
+
+        return (tuple(map(lambda x: int(x), center)), bitmap.getbbox())
 
     def _calculateCoordinatesSum(self, bitmap):
         points = 0
@@ -92,8 +87,19 @@ class BinaryBitmapProcessor:
         return math.sqrt(pow(pixel1[0]-pixel2[0], 2) + pow(pixel1[1]-pixel2[1], 2))
 
 
-def createHorizontalListOfCoordinates(list, value):
-    return map(functools.partial(lambda x,y: (x,y), y=value), list)
+class BinaryBitmapProcessor:
 
-def createVerticalListOfCoordinates(list, value):
-    return map(functools.partial(lambda x,y: (y,x), y=value), list)
+    # zwracaj krotke z trzema elementami:
+    # 1: krotka centrum masy x,y
+    # 2: krotka wspolrzedne prostoka left, upper, right, lower
+    # 3: przesztalcona bitmapa
+    verticalPreprocessor = BinaryBitmapVerticalTransformer()
+    bitmapProcessor = BinaryBitmapNoiseTransformer()
+
+    def reduceNoiseAndCalculateMassCenter(self, bitmap, densityCoefficient, distanceFromCenterCoefficient):
+        assert bitmap.mode == BITMAP_MODE
+        transformed = bitmap.copy()
+        self.verticalPreprocessor.preprocessBitmapVertically(transformed, densityCoefficient)
+        (center, box) = self.bitmapProcessor.reduceNoise(transformed, distanceFromCenterCoefficient)
+        print center, box
+        return (center, box, ImageHandler().createNewBinaryBitmap(transformed.size, transformed.getdata()))

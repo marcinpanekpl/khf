@@ -12,6 +12,7 @@ from ttk import Style
 from Controller import Controller
 import sys
 import tkFileDialog
+from TkRenderer import TKRenderer
 
 
 class Interface(Frame):
@@ -20,7 +21,7 @@ class Interface(Frame):
         Frame.__init__(self, parent)   
 
         self.parent = parent
-        self.controller = Controller(self)
+        self.controller = Controller(TKRenderer())
         self.initUI()
     
     def initUI(self):
@@ -87,10 +88,19 @@ class Interface(Frame):
         snakeCheckBox.grid(row=4, padx=15, stick=N + W)
         
         # Generate
+        self.generateButton = Button(self.menuFrame, text="Generuj mapą binarną",
+            command=lambda: self.showImage(self.controller.generateBinaryMotionBitmap(
+                int(self.binaryThreshold.get()))))
+        self.generateButton.grid(row=6, column=0, padx=15, pady=(20,0), stick=N + W)
+
+        self.generateButton = Button(self.menuFrame, text="Pokaż centrum masy",
+            command=lambda: self.showImage(self.controller.generateBitmapWithMassCenter(
+                int(self.binaryThreshold.get()), int(self.densityCoefficient.get()), int(self.distanceFromCenterCoefficient.get()))))
+        self.generateButton.grid(row=7, column=0, padx=15, pady=(20,0), stick=N + W)
+
         self.generateButton = Button(self.menuFrame, text="Generate", command=lambda: self.showImage(self.controller.generate()))
-        self.generateButton.grid(row=6, column=0, padx=15, pady=(20,0), stick=N + W)      
-        
-        
+        self.generateButton.grid(row=8, column=0, padx=15, pady=(20,0), stick=N + W)
+
     def createBinarySpinBoxes(self):
         frame = Frame(self.menuFrame, width=300)
 
@@ -200,7 +210,7 @@ class Interface(Frame):
         x = (sw - w) / 2
         y = (sh - h) / 2
         self.parent.geometry('%dx%d+%d+%d' % (w, h, x, y))
-        
+
 
 def main():
   
