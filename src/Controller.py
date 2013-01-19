@@ -57,9 +57,9 @@ class Controller(object):
 
     def generateBitmapWithMassCenter(self, threshold, densityCoefficient, distanceFromCenterCoefficient):
         if self.cache.get(self.current) is not None:
-            img = self.greyBitmapProcessor.createBinaryMotionMap((self.cache.get(self.current - 1)),
+            img = self.greyBitmapProcessor.createBinaryMotionMap(self.cache.get(self.current - 1),
                                                                  self.cache.get(self.current), threshold)
-            (center, box, img) = self.binaryBitmapProcessor.reduceNoiseAndCalculateMassCenter(img,
+            (center, box, newImg) = self.binaryBitmapProcessor.reduceNoiseAndCalculateMassCenter(img,
                         densityCoefficient, distanceFromCenterCoefficient)
             photo = self.imageHandler.createNewRGBFromBinaryBitmap(img)
             self.imageHandler.putRedBoxIntoPicture(photo, box)
