@@ -8,15 +8,18 @@ Created on 16-12-2012
 
 from Tkinter import Tk, Frame, Button, BOTH, LEFT, Label, N, E, S, W, \
     Checkbutton, BooleanVar, StringVar, Spinbox
+import os
 from ttk import Style
 from Controller import Controller
 import sys
 import tkFileDialog
 from TkRenderer import TKRenderer
 
+WELCOME_IMAGE_PATH = "../../GAIT/Depth0/0094.png"
+SECOND_WELCOME_IMAGE_PATH = "../../GAIT/Depth0/0095.png" # mozna generowac jeden z drugiego, ale str() obcina zera itp...
 
 class Interface(Frame):
-  
+
     def __init__(self, parent):
         Frame.__init__(self, parent)   
 
@@ -55,7 +58,14 @@ class Interface(Frame):
     def initImageFrame(self):
         
         self.imageFrame = Frame(self, borderwidth=2)
-        self.showImage(self.controller.getImage())
+        if not os.path.exists(WELCOME_IMAGE_PATH):
+            print "Welcome image not found at:" + WELCOME_IMAGE_PATH
+        else:
+            if not os.path.exists(SECOND_WELCOME_IMAGE_PATH):
+                print "Second welcome image not found at:" + SECOND_WELCOME_IMAGE_PATH
+            else:
+                self.showImage(self.controller.loadImage(WELCOME_IMAGE_PATH))
+                self.showImage(self.controller.loadImage(SECOND_WELCOME_IMAGE_PATH))
 
         
     def initMenuFrame(self):
@@ -171,7 +181,7 @@ class Interface(Frame):
                     return True
                 
                 value = int(value_if_allowed)
-                if value >= 0 and value < 256:
+                if 0 <= value < 256:
                     return True
                 else:
                     return False
@@ -183,7 +193,7 @@ class Interface(Frame):
             return False
 
     def showImage(self, img):
-        if img != None:
+        if img is not None:
             label = Label(self, image=img)
             label.image = img  # keep a reference! without it the image will be garbaged
             label.grid(row=1, column=0, sticky=N + W)
@@ -191,11 +201,11 @@ class Interface(Frame):
     def openFile(self):
         
         fileHandler = tkFileDialog.askopenfile(parent=self, mode='rb', title='Choose the first image')
-        if fileHandler != None:
+        if fileHandler is not None:
             self.showImage(self.controller.loadImage(fileHandler))
             
             fileHandler2 = tkFileDialog.askopenfile(parent=self, mode='rb', title='Choose the second image')
-            if fileHandler2 != None:
+            if fileHandler2 is not None:
                 self.showImage(self.controller.loadImage(fileHandler2))
 
     def setSize(self, w, h):

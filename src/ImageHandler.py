@@ -1,5 +1,7 @@
+from mimify import File
 import Image
 import operator
+import os
 
 __author__ = 'marc'
 
@@ -11,9 +13,6 @@ COLOR_MAX_VALUE = 255
 RED_COLOR = (COLOR_MAX_VALUE, 0, 0)
 
 class ImageHandler:
-
-    def loadWelcomeImage(self):
-        return Image.open("../GAIT/Depth0/0019.png")
 
     def loadGreyScaleImage(self, fileHandler):
         return Image.open(fileHandler).convert("L")
