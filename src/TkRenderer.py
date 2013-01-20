@@ -5,8 +5,8 @@ __author__ = 'marc'
 
 class TKRenderer:
 
-    def renderPhoto(self, photo):
+    def toPhotoImage(self, photo):
         return ImageTk.PhotoImage(photo)
 
-    def showBinaryBitmap(self, bitmap):
+    def toBinaryImage(self, bitmap):
         return ImageTk.BitmapImage(bitmap)

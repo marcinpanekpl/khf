@@ -13,36 +13,60 @@ def createHorizontalListOfCoordinates(list, value):
 def createVerticalListOfCoordinates(list, value):
     return map(functools.partial(lambda x,y: (y,x), y=value), list)
 
-class BinaryBitmapVerticalTransformer:
+class BinaryBitmapPreprocessor:
 
     def preprocessBitmapVertically(self, bitmap, densityCoefficient):
         sums = []
         for x in xrange(bitmap.size[0]):
             sum = 0
             for y in xrange(bitmap.size[1]):
-                sum += bitmap.getpixel((x,y))
+                sum += bitmap.getpixel((x,y)) # TODO ->[] version
             sums += [sum]
 
         maxDensity = max(sums)
         for x in xrange(bitmap.size[0]):
-            if (sums[x] < densityCoefficient*maxDensity/100):
+            if sums[x] < densityCoefficient*maxDensity/100:
                 bitmap.paste(0, (x, 0, x+1, bitmap.size[1]))
+
+    def erosion(self, image, erosionLoops):
+        '''
+        Classic erosion algorithm.
+        Uses temporary '2' values to distinct values changed in this loop.
+        '''
+        bitmap = image.load()
+
+        for i in range(erosionLoops):
+            for x in range(image.size[0]):
+                for y in range(image.size[1]):
+                    if bitmap[x,y] == 1:
+                        if  (x>0 and bitmap[x-1,y] == 0) or\
+                            (y>0 and bitmap[x, y-1] == 0) or\
+                            (x+1 < image.size[0] and bitmap[x+1, y] == 0) or\
+                            (y+1 < image.size[1] and bitmap[x, y+1] == 0):
+                                bitmap[x, y] = 2
+
+            for x in range(image.size[0]):
+                for y in range(image.size[1]):
+                    if bitmap[x,y] == 2:
+                        bitmap[x,y] = 0
+
 
 class BinaryBitmapNoiseTransformer:
 
     def reduceNoise(self, bitmap, distanceFromCenterCoefficient):
+        normalizedDistanceFromCenter = bitmap.size[1]*(1-distanceFromCenterCoefficient/100)
         (coordinatesSum, points) = self._calculateCoordinatesSum(bitmap)
         noise = True
-        while(noise and points > 0):
+        while noise and points > 0:
             center = map(lambda x: x/points, coordinatesSum)
             farest = self._calculateFarestPointFromTheBox(bitmap, center)
-            noise = self._decideWhetherRemovePixel(center, farest, bitmap.size[1]*(1-distanceFromCenterCoefficient/100))
-            if (noise):
+            noise = self._decideWhetherRemovePixel(center, farest, normalizedDistanceFromCenter)
+            if noise:
                 bitmap.paste(0, farest + tuple(map(operator.add, farest, (1,1))))
                 points -= 1
                 coordinatesSum = map(operator.sub, coordinatesSum, farest)
 
-        return (tuple(map(lambda x: int(x), center)), bitmap.getbbox())
+        return tuple(map(lambda x: int(x), center)), bitmap.getbbox()
 
     def _calculateCoordinatesSum(self, bitmap):
         points = 0
@@ -50,15 +74,15 @@ class BinaryBitmapNoiseTransformer:
 
         for i in xrange(bitmap.size[0]):
             for j in xrange(bitmap.size[1]):
-                if (bitmap.getpixel((i,j)) > 0):
+                if bitmap.getpixel((i,j)) > 0:
                     points += 1
                     coordinatesSum = map(operator.add, coordinatesSum, (i,j))
 
-        return (coordinatesSum, points)
+        return coordinatesSum, points
 
     def _calculateFarestPointFromTheBox(self, bitmap, center):
         maxDistance = 0
-        farest = (0,0)
+        furthest = (0,0)
         (left, upper, right, lower) = bitmap.getbbox()
         horizontal = xrange(left, right)
         vertical = xrange(upper, lower)
@@ -71,14 +95,14 @@ class BinaryBitmapNoiseTransformer:
         #print coordinatesList
         for xy in coordinatesList:
             key = bitmap.getpixel(xy)
-            if (key > 0):
+            if key > 0:
                 distance = self._calculateDistance(xy, center)
-                if (distance > maxDistance):
+                if distance > maxDistance:
                     maxDistance = distance
-                    farest = xy
+                    furthest = xy
 
-        #print "f, c, dist: " + farest.__str__(), center.__str__(), distance.__str__()
-        return farest
+        #print "f, c, dist: " + furthest.__str__(), center.__str__(), distance.__str__()
+        return furthest
 
     def _decideWhetherRemovePixel(self, center, farest, maxDistanceFromCenter):
         return True if (self._calculateDistance(center, farest) > maxDistanceFromCenter) else False
@@ -92,14 +116,19 @@ class BinaryBitmapProcessor:
     # zwracaj krotke z trzema elementami:
     # 1: krotka centrum masy x,y
     # 2: krotka wspolrzedne prostoka left, upper, right, lower
-    # 3: przesztalcona bitmapa
-    verticalPreprocessor = BinaryBitmapVerticalTransformer()
+    # 3: przeksztalcona bitmapa
+    verticalPreprocessor = BinaryBitmapPreprocessor()
     bitmapProcessor = BinaryBitmapNoiseTransformer()
 
-    def reduceNoiseAndCalculateMassCenter(self, bitmap, densityCoefficient, distanceFromCenterCoefficient):
+    def preprocess(self, bitmap, erosionLoops, densityCoefficient):
+        transformed = bitmap.copy()
+#        self.verticalPreprocessor.preprocessBitmapVertically(transformed, densityCoefficient)
+        self.verticalPreprocessor.erosion(transformed, erosionLoops)
+        return transformed
+
+    def calculateMassCenter(self, bitmap, distanceFromCenterCoefficient):
         assert bitmap.mode == BITMAP_MODE
         transformed = bitmap.copy()
-        self.verticalPreprocessor.preprocessBitmapVertically(transformed, densityCoefficient)
         (center, box) = self.bitmapProcessor.reduceNoise(transformed, distanceFromCenterCoefficient)
         print center, box
-        return (center, box, ImageHandler().createNewBinaryBitmap(transformed.size, transformed.getdata()))
+        return center, box, ImageHandler().createNewBinaryBitmap(transformed.size, transformed.getdata())

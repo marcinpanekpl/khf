@@ -74,8 +74,8 @@ class Interface(Frame):
         self.menuFrame.grid(row=1, column=1, sticky=N + E + S + W)
         self.menuFrame.columnconfigure(0, weight=0, minsize=100, pad=10)
 
-        # CheckBoxes
         binaryText = Label(self.menuFrame, text="Mapa binarna")
+        preprocessingText = Label(self.menuFrame, text="Preprocessing")
         cogText = Label(self.menuFrame, text="Środek ciężkości")
         snakeText = Label(self.menuFrame, text="Metoda aktywnych konturów")
         
@@ -83,29 +83,51 @@ class Interface(Frame):
         self.binarySpinFrame = self.createBinarySpinBoxes()
         self.binarySpinFrame.grid(row=1, column=0, padx=36, pady=(5,15), stick=N + W)
 
+        self.preprocessFrame = self.createPreprocessBoxes()
+        self.preprocessFrame.grid(row=3, column=0, padx=36, pady=(0,15), stick=N + W)
+
         self.cogSpinFrame = self.createCogSpinBoxes()
-        self.cogSpinFrame.grid(row=3, column=0, padx=36, pady=(0,15), stick=N + W)
-        
+        self.cogSpinFrame.grid(row=5, column=0, padx=36, pady=(0,15), stick=N + W)
+
         self.snakeSpinFrame = self.createSnakeSpinBoxes()
-        self.snakeSpinFrame.grid(row=5, column=0, padx=36, pady=(0,15), stick=N + W)
+        self.snakeSpinFrame.grid(row=7, column=0, padx=36, pady=(0,15), stick=N + W)
 
         binaryText.grid(row=0, padx=15, stick=N + W)
-        cogText.grid(row=2, padx=15, stick=N + W)
-        snakeText.grid(row=4, padx=15, stick=N + W)
+        preprocessingText.grid(row=2, padx=15, stick=N + W)
+        cogText.grid(row=4, padx=15, stick=N + W)
+        snakeText.grid(row=6, padx=15, stick=N + W)
         
-        # Generate
-        self.generateButton = Button(self.menuFrame, text="Generuj mapą binarną",
-            command=lambda: self.showImage(self.controller.generateBinaryMotionBitmap(
-                int(self.binaryThreshold.get()))))
-        self.generateButton.grid(row=6, column=0, padx=15, pady=(20,0), stick=N + W)
+        # Buttons
+        self.binaryButton = Button(self.menuFrame, text="Generuj mapą binarną",
+            command=lambda: self.showImage(self.controller.getBinaryMotionBitmap(
+                int(self.binaryThreshold.get())
+            )))
 
-        self.generateButton = Button(self.menuFrame, text="Pokaż centrum masy",
-            command=lambda: self.showImage(self.controller.generateBitmapWithMassCenter(
-                int(self.binaryThreshold.get()), int(self.densityCoefficient.get()), int(self.distanceFromCenterCoefficient.get()))))
-        self.generateButton.grid(row=7, column=0, padx=15, pady=(20,0), stick=N + W)
+        self.preprocessButton = Button(self.menuFrame, text="Preprocessing",
+            command=lambda: self.showImage(self.controller.getPreprocessedBitmap(
+                int(self.binaryThreshold.get()),
+                int(self.erosion.get()), int(self.densityCoefficient.get())
+            )))
 
-        self.generateButton = Button(self.menuFrame, text="Generate", command=lambda: self.showImage(self.controller.generate()))
-        self.generateButton.grid(row=8, column=0, padx=15, pady=(20,0), stick=N + W)
+        self.massCenterButton = Button(self.menuFrame, text="Pokaż centrum masy",
+            command=lambda: self.showImage(self.controller.getBitmapWithMassCenter(
+                int(self.binaryThreshold.get()),
+                int(self.erosion.get()), int(self.densityCoefficient.get()),
+                int(self.distanceFromCenterCoefficient.get())
+            )))
+
+        self.snakeButton = Button(self.menuFrame, text="Wyznacz kontur",
+            command=lambda: self.showImage(self.controller.getTheSnake(
+                int(self.binaryThreshold.get()),
+                int(self.erosion.get()), int(self.densityCoefficient.get()),
+                int(self.distanceFromCenterCoefficient.get()),
+                int(self.snakeValue1.get()), int(self.snakeValue2.get()), int(self.snakeValue3.get())
+            )))
+
+        self.binaryButton.grid(row=8, column=0, padx=15, pady=(20,0), stick=N + W)
+        self.preprocessButton.grid(row=9, column=0, padx=15, pady=(20,0), stick=N + W)
+        self.massCenterButton.grid(row=10, column=0, padx=15, pady=(20,0), stick=N + W)
+        self.snakeButton.grid(row=11, column=0, padx=15, pady=(20,0), stick=N + W)
 
     def createBinarySpinBoxes(self):
         frame = Frame(self.menuFrame, width=300)
@@ -114,7 +136,7 @@ class Interface(Frame):
         to = 255
         vcmd = (self.register(self.validateSpinBox),'%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
-        label1 = Label(frame, text="TRESHOLD (0,255)")
+        label1 = Label(frame, text="THRESHOLD (0,255)")
         self.binaryThreshold = StringVar(value="40")
         self.binarySpinBox = Spinbox(frame, textvariable=self.binaryThreshold, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd) 
         
@@ -122,7 +144,23 @@ class Interface(Frame):
         self.binarySpinBox.grid(row=0, column=1, stick=N+W)
         
         return frame
-        
+
+    def createPreprocessBoxes(self):
+        frame = Frame(self.menuFrame, width=300)
+
+        from_ = 0
+        to = 100
+        vcmd = (self.register(self.validateSpinBox),'%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+
+        label1 = Label(frame, text="Erozja - ilosc przebiegow")
+        self.erosion = StringVar(value="2")
+        self.erosionSpinBox = Spinbox(frame, textvariable=self.erosion, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd)
+
+        label1.grid(row=0, column=0, padx=(0,10), stick=N+W)
+        self.erosionSpinBox.grid(row=0, column=1, stick=N+W)
+
+        return frame
+
     def createCogSpinBoxes(self):
         frame = Frame(self.menuFrame, width=300)
 
@@ -153,8 +191,8 @@ class Interface(Frame):
         vcmd = (self.register(self.validateSpinBox),'%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
         label1 = Label(frame, text="Parametr 1")
-        self.snakeValue = StringVar()
-        self.snakeSpinBox = Spinbox(frame, textvariable=self.snakeValue, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd) 
+        self.snakeValue1 = StringVar()
+        self.snakeSpinBox = Spinbox(frame, textvariable=self.snakeValue1, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd)
         
         label2 = Label(frame, text="Parametr 2")
         self.snakeValue2 = StringVar()
@@ -201,6 +239,7 @@ class Interface(Frame):
     def openFile(self):
         
         fileHandler = tkFileDialog.askopenfile(parent=self, mode='rb', title='Choose the first image')
+        self.controller.clearCache()
         if fileHandler is not None:
             self.showImage(self.controller.loadImage(fileHandler))
             
@@ -216,7 +255,6 @@ class Interface(Frame):
         x = (sw - w) / 2
         y = (sh - h) / 2
         self.parent.geometry('%dx%d+%d+%d' % (w, h, x, y))
-
 
 def main():
   

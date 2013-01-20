@@ -2,6 +2,7 @@ from mimify import File
 import Image
 import operator
 import os
+import ImageDraw
 
 __author__ = 'marc'
 
