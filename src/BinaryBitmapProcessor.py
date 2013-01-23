@@ -68,22 +68,24 @@ class BinaryBitmapNoiseTransformer:
 
         return tuple(map(lambda x: int(x), center)), bitmap.getbbox()
 
-    def _calculateCoordinatesSum(self, bitmap):
+    def _calculateCoordinatesSum(self, image):
+        bitmap = image.load()
         points = 0
         coordinatesSum = (0,0)
 
-        for i in xrange(bitmap.size[0]):
-            for j in xrange(bitmap.size[1]):
-                if bitmap.getpixel((i,j)) > 0:
+        for i in xrange(image.size[0]):
+            for j in xrange(image.size[1]):
+                if bitmap[i,j] > 0:
                     points += 1
                     coordinatesSum = map(operator.add, coordinatesSum, (i,j))
 
         return coordinatesSum, points
 
-    def _calculateFarestPointFromTheBox(self, bitmap, center):
+    def _calculateFarestPointFromTheBox(self, image, center):
+        bitmap = image.load()
         maxDistance = 0
         furthest = (0,0)
-        (left, upper, right, lower) = bitmap.getbbox()
+        (left, upper, right, lower) = image.getbbox()
         horizontal = xrange(left, right)
         vertical = xrange(upper, lower)
         coordinatesList = createVerticalListOfCoordinates(vertical, left) +\
@@ -94,7 +96,7 @@ class BinaryBitmapNoiseTransformer:
         #print coordinatesList.__len__()
         #print coordinatesList
         for xy in coordinatesList:
-            key = bitmap.getpixel(xy)
+            key = bitmap[xy[0],xy[1]]
             if key > 0:
                 distance = self._calculateDistance(xy, center)
                 if distance > maxDistance:
@@ -130,5 +132,4 @@ class BinaryBitmapProcessor:
         assert bitmap.mode == BITMAP_MODE
         transformed = bitmap.copy()
         (center, box) = self.bitmapProcessor.reduceNoise(transformed, distanceFromCenterCoefficient)
-        print center, box
         return center, box, ImageHandler().createNewBinaryBitmap(transformed.size, transformed.getdata())
