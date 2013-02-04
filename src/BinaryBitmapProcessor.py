@@ -124,8 +124,8 @@ class BinaryBitmapProcessor:
 
     def preprocess(self, bitmap, erosionLoops, densityCoefficient):
         transformed = bitmap.copy()
-#        self.verticalPreprocessor.preprocessBitmapVertically(transformed, densityCoefficient)
         self.verticalPreprocessor.erosion(transformed, erosionLoops)
+        self.verticalPreprocessor.preprocessBitmapVertically(transformed, densityCoefficient)
         return transformed
 
     def calculateMassCenter(self, bitmap, distanceFromCenterCoefficient):

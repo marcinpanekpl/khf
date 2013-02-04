@@ -66,14 +66,16 @@ class Controller(object):
         return preprocessedImg.convert("1")
 
     def generateBitmapWithMassCenter(self, img, distanceFromCenterCoefficient):
-        (center, box, calculatedImg) = self.binaryBitmapProcessor.calculateMassCenter(img,
-            distanceFromCenterCoefficient)
+        return self.binaryBitmapProcessor.calculateMassCenter(img, distanceFromCenterCoefficient)
+
+    def paintBoxWithMotionVector(self, img, box, center, first, second):
         photo = self.imageHandler.createNewRGBFromBinaryBitmap(img)
         self.imageHandler.putRedBoxIntoPicture(photo, box)
-        self.imageHandler.putBigRedPoint(photo, center)
+        self.imageHandler.putBigRedPoint(photo, first)
+        self.imageHandler.drawLine(photo, first, second)
         self.addImage(photo)
 
-        return photo, center, box
+        return photo
 
     def releaseTheSnake(self, img, center, box, snakeValue, snakeValue1, snakeValue2):
         return img
@@ -100,7 +102,12 @@ class Controller(object):
         if self.cache.get(0) is not None and self.cache.get(1) is not None:
             img = self.generateBinaryMotionBitmap(threshold)
             img = self.generatePreprocessedBitmap(img, erosionLoops, densityCoefficient)
-            img, center, box = self.generateBitmapWithMassCenter(img, distanceFromCenterCoefficient)
+            (center, box, calculatedImg) = self.generateBitmapWithMassCenter(img, distanceFromCenterCoefficient)
+            imageWithDirectionInfo = self.greyBitmapProcessor.createGreyBitmapWithDirectionInfo(self.cache.get(0),
+                self.cache.get(1), threshold)
+            (first, second) = self.greyBitmapProcessor.calculateMassCenterAndMotionVector(imageWithDirectionInfo, box)
+
+            img = self.paintBoxWithMotionVector(img, box, center, first, second)
             return self.renderer.toPhotoImage(img)
 
     def getTheSnake(self, threshold, erosionLoops, densityCoefficient, distanceFromCenterCoefficient, snakeValue, snakeValue1, snakeValue2):

@@ -1,5 +1,6 @@
 from mimify import File
 import Image
+import ImageDraw
 import operator
 import os
 import ImageDraw
@@ -17,6 +18,14 @@ class ImageHandler:
 
     def loadGreyScaleImage(self, fileHandler):
         return Image.open(fileHandler).convert("L")
+
+    def createEmptyGreyScaleBitmap(self, size):
+        return Image.new(GREY_SCALE_MODE, size)
+
+    def createNewGreyScaleBitmap(self, size, data):
+        image = Image.new(GREY_SCALE_MODE, size)
+        image.putdata(data)
+        return image
 
     def createNewBinaryBitmap(self, size, data):
         image = Image.new(BITMAP_MODE, size)
@@ -37,3 +46,8 @@ class ImageHandler:
 
     def putBigRedPoint(self, picture, point):
         picture.paste(RED_COLOR, tuple(map(operator.sub, point, (3,3))) + tuple(map(operator.add, point, (3,3))))
+
+    def drawLine(self, picture, first, second):
+        draw = ImageDraw.Draw(picture)
+        draw.line(first + second, fill=RED_COLOR, width=3)
+        del draw
