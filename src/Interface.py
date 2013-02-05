@@ -99,7 +99,7 @@ class Interface(Frame):
         
         # Buttons
         self.binaryButton = Button(self.menuFrame, text="Generuj mapą binarną",
-            command=lambda: self.showImage(self.controller.getBinaryMotionBitmap(
+            command=lambda: self.showImage(self.controller.generateBinaryMotionBitmap(
                 int(self.binaryThreshold.get())
             )))
 

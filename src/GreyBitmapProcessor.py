@@ -16,7 +16,6 @@ class GreyBitmapProcessor:
         data = map(functools.partial(processPixel, THRESHOLD=THRESHOLD), list(image1.getdata()), list(image2.getdata()))
         return ImageHandler().createNewBinaryBitmap(image1.size, data)
 
-
 def processPixel(x, y, THRESHOLD):
     if abs(y - x) > THRESHOLD:
         return 1

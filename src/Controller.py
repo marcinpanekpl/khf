@@ -5,12 +5,16 @@ Created on 16-12-2012
 
 @author: Marcin Panek
 '''
+from math import cos, sin, pi
 import Image
 import ImageDraw
+import numpy as np
 from BinaryBitmapProcessor import BinaryBitmapProcessor
 from CacheHolder import CacheHolder
 from GreyBitmapProcessor import GreyBitmapProcessor
 from ImageHandler import ImageHandler
+from scipy import ndimage as ndi
+from pylab import *
 
 class Controller(object):
     '''
@@ -51,6 +55,13 @@ class Controller(object):
         self.current = -1
 
     ### Algorithm parts
+
+    def tmp(self, threshold):
+        img = self.greyBitmapProcessor.createBinaryMotionMap1((self.cache.get(0)),
+            self.cache.get(1), threshold)
+        self.addImage(img.convert("L"))
+
+        return img.convert("1")
 
     def generateBinaryMotionBitmap(self, threshold):
         img = self.greyBitmapProcessor.createBinaryMotionMap((self.cache.get(0)),
@@ -100,6 +111,7 @@ class Controller(object):
         if self.cache.get(0) is not None and self.cache.get(1) is not None:
             img = self.generateBinaryMotionBitmap(threshold)
             img = self.generatePreprocessedBitmap(img, erosionLoops, densityCoefficient)
+            img.save("image3.bmp");
             img, center, box = self.generateBitmapWithMassCenter(img, distanceFromCenterCoefficient)
             return self.renderer.toPhotoImage(img)
 
@@ -113,7 +125,7 @@ class Controller(object):
             photo = img.copy()
             center = (187, 232)
             box = (11,73,403,390) # original values
-            box = (100,70,300,400)
+            box = (100,70,280,400)
             draw = ImageDraw.Draw(photo)
             draw.rectangle(box, outline="red")
             self.imageHandler.putBigRedPoint(photo, center)
@@ -122,3 +134,4 @@ class Controller(object):
             imgWithSnake = self.releaseTheSnake(img.convert("1"), center, box, snakeValue, snakeValue1, snakeValue2)
             return self.renderer.toPhotoImage(img)
     ###
+

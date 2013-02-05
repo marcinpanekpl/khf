@@ -35,5 +35,5 @@ class ImageHandler:
         picture.paste(RED_COLOR, (right, upper, right+1, lower))
         picture.paste(RED_COLOR, (left, lower, right, lower+1))
 
-    def putBigRedPoint(self, picture, point):
-        picture.paste(RED_COLOR, tuple(map(operator.sub, point, (3,3))) + tuple(map(operator.add, point, (3,3))))
+    def putBigRedPoint(self, picture, point, size=3, color=RED_COLOR):
+        picture.paste(color, tuple(map(operator.sub, point, (size, size))) + tuple(map(operator.add, point, (size, size))))
