@@ -169,11 +169,11 @@ class Interface(Frame):
         vcmd = (self.register(self.validateSpinBox),'%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
         label1 = Label(frame, text="Wsp. kary za rzadkość")
-        self.densityCoefficient = StringVar(value="50")
+        self.densityCoefficient = StringVar(value="10")
         self.cogSpinBox = Spinbox(frame, textvariable=self.densityCoefficient, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd)
         
         label2 = Label(frame, text="Wsp. kary za odległość")
-        self.distanceFromCenterCoefficient = StringVar(value="50")
+        self.distanceFromCenterCoefficient = StringVar(value="60")
         self.cogSpinBox2 = Spinbox(frame, textvariable=self.distanceFromCenterCoefficient, width=4, from_=from_, to=to, validate="key", validatecommand=vcmd)
         
         label1.grid(row=0, column=0, padx=(0,10), stick=N+W)
